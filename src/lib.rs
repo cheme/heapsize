@@ -3,6 +3,8 @@
 #[cfg(target_os = "windows")]
 extern crate winapi;
 
+#[cfg(target_os = "macos")]
+extern crate jemallocator;
 #[cfg(target_os = "windows")]
 use winapi::um::heapapi::{GetProcessHeap, HeapSize, HeapValidate};
 use std::borrow::Cow;
@@ -19,6 +21,12 @@ use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, AtomicIsize, AtomicUsize};
 use std::rc::Rc;
 
+// force jemalloc on mac
+#[cfg(target_os = "macos")]
+#[global_allocator]
+/// Global allocator
+pub static ALLOC: jemallocator::Jemalloc = jemallocator::Jemalloc;
+	
 /// Get the size of a heap block.
 ///
 /// Ideally Rust would expose a function like this in std::rt::heap.
@@ -34,7 +42,7 @@ pub unsafe fn heap_size_of<T>(ptr: *const T) -> usize {
     }
 }
 
-#[cfg(not(target_os = "windows"))]
+#[cfg(not(any(target_os = "windows",target_os = "macos")))]
 unsafe fn heap_size_of_impl(ptr: *const c_void) -> usize {
     // The C prototype is `je_malloc_usable_size(JEMALLOC_USABLE_SIZE_CONST void *ptr)`. On some
     // platforms `JEMALLOC_USABLE_SIZE_CONST` is `const` and on some it is empty. But in practice
@@ -45,6 +53,11 @@ unsafe fn heap_size_of_impl(ptr: *const c_void) -> usize {
         fn malloc_usable_size(ptr: *const c_void) -> usize;
     }
     malloc_usable_size(ptr)
+}
+
+#[cfg(target_os = "macos")]
+unsafe fn heap_size_of_impl(mut ptr: *const c_void) -> usize {
+	jemallocator::usable_size(ptr)
 }
 
 #[cfg(target_os = "windows")]
