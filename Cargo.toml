@@ -10,7 +10,7 @@ build = "build.rs"
 [target.'cfg(windows)'.dependencies]
 winapi = { version = "0.3.4", features = ["std", "heapapi"] }
 
-[target.'cfg(macos)'.dependencies]
+[target.'cfg(target_os = "macos")'.dependencies]
 jemallocator = { version = "0.1" }
 
 [features]
