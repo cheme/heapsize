@@ -3,7 +3,6 @@
 #[cfg(target_os = "windows")]
 extern crate winapi;
 
-#[cfg(feature = "force-jemalloc")]
 extern crate jemallocator;
 #[cfg(target_os = "windows")]
 use winapi::um::heapapi::{GetProcessHeap, HeapSize, HeapValidate};
@@ -21,7 +20,6 @@ use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, AtomicIsize, AtomicUsize};
 use std::rc::Rc;
 
-#[cfg(feature = "force-jemalloc")]
 // force jemalloc on mac
 #[global_allocator]
 /// Global allocator
@@ -41,7 +39,7 @@ pub unsafe fn heap_size_of<T>(ptr: *const T) -> usize {
         heap_size_of_impl(ptr as *const c_void)
     }
 }
-
+/*
 #[cfg(not(any(target_os = "windows", feature = "force-jemalloc")))]
 unsafe fn heap_size_of_impl(ptr: *const c_void) -> usize {
     // The C prototype is `je_malloc_usable_size(JEMALLOC_USABLE_SIZE_CONST void *ptr)`. On some
@@ -53,13 +51,13 @@ unsafe fn heap_size_of_impl(ptr: *const c_void) -> usize {
         fn malloc_usable_size(ptr: *const c_void) -> usize;
     }
     malloc_usable_size(ptr)
-}
+}*/
 
-#[cfg(all(feature = "force-jemalloc", not(target_os = "windows")))]
+//#[cfg(all(feature = "force-jemalloc", not(target_os = "windows")))]
 unsafe fn heap_size_of_impl(mut ptr: *const c_void) -> usize {
 	jemallocator::usable_size(ptr)
 }
-
+/*
 #[cfg(target_os = "windows")]
 unsafe fn heap_size_of_impl(mut ptr: *const c_void) -> usize {
     let heap = GetProcessHeap();
@@ -70,7 +68,7 @@ unsafe fn heap_size_of_impl(mut ptr: *const c_void) -> usize {
 
     HeapSize(heap, 0, ptr) as usize
 }
-
+*/
 // The simplest trait for measuring the size of heap data structures. More complex traits that
 // return multiple measurements -- e.g. measure text separately from images -- are also possible,
 // and should be used when appropriate.
