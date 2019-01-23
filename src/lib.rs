@@ -3,7 +3,7 @@
 #[cfg(target_os = "windows")]
 extern crate winapi;
 
-#[cfg(target_os = "macos")]
+#[cfg(target_os = "darwin")]
 extern crate jemallocator;
 #[cfg(target_os = "windows")]
 use winapi::um::heapapi::{GetProcessHeap, HeapSize, HeapValidate};
@@ -22,7 +22,7 @@ use std::sync::atomic::{AtomicBool, AtomicIsize, AtomicUsize};
 use std::rc::Rc;
 
 // force jemalloc on mac
-#[cfg(target_os = "macos")]
+#[cfg(target_os = "darwin")]
 #[global_allocator]
 /// Global allocator
 pub static ALLOC: jemallocator::Jemalloc = jemallocator::Jemalloc;
@@ -42,7 +42,7 @@ pub unsafe fn heap_size_of<T>(ptr: *const T) -> usize {
     }
 }
 
-#[cfg(not(any(target_os = "windows",target_os = "macos")))]
+#[cfg(not(any(target_os = "windows",target_os = "darwin")))]
 unsafe fn heap_size_of_impl(ptr: *const c_void) -> usize {
     // The C prototype is `je_malloc_usable_size(JEMALLOC_USABLE_SIZE_CONST void *ptr)`. On some
     // platforms `JEMALLOC_USABLE_SIZE_CONST` is `const` and on some it is empty. But in practice
@@ -55,7 +55,7 @@ unsafe fn heap_size_of_impl(ptr: *const c_void) -> usize {
     malloc_usable_size(ptr)
 }
 
-#[cfg(target_os = "macos")]
+#[cfg(target_os = "darwin")]
 unsafe fn heap_size_of_impl(mut ptr: *const c_void) -> usize {
 	jemallocator::usable_size(ptr)
 }
