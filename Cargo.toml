@@ -10,12 +10,13 @@ build = "build.rs"
 [target.'cfg(windows)'.dependencies]
 winapi = { version = "0.3.4", features = ["std", "heapapi"] }
 
-#[target.'cfg(macos)'.dependencies]
 [dependencies]
-jemallocator = { version = "0.1" }
+jemallocator = { version = "0.1", optional = true }
 
 [features]
+default = [ "force-jemalloc" ] # just for test (conflicts with windows build)
 unstable = []
 
 # https://github.com/servo/heapsize/issues/74
 flexible-tests = []
+force-jemalloc = [ "jemallocator" ]
