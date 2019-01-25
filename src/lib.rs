@@ -21,12 +21,6 @@ use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, AtomicIsize, AtomicUsize};
 use std::rc::Rc;
 
-// force jemalloc on mac and linux
-#[cfg(any(target_os = "macos", target_os = "linux"))]
-#[global_allocator]
-/// Global allocator
-pub static ALLOC: jemallocator::Jemalloc = jemallocator::Jemalloc;
-	
 /// Get the size of a heap block.
 ///
 /// Ideally Rust would expose a function like this in std::rt::heap.
@@ -56,7 +50,7 @@ unsafe fn heap_size_of_impl(ptr: *const c_void) -> usize {
 }
 
 #[cfg(any(target_os = "macos", target_os = "linux"))]
-unsafe fn heap_size_of_impl(ptr: *const c_void) -> usize {
+unsafe fn heap_size_of_impl(mut ptr: *const c_void) -> usize {
 	jemallocator::usable_size(ptr)
 }
 
@@ -222,7 +216,8 @@ impl<T1, T2, T3, T4, T5> HeapSizeOf for (T1, T2, T3, T4, T5)
 
 impl<T: HeapSizeOf> HeapSizeOf for Arc<T> {
     fn heap_size_of_children(&self) -> usize {
-        (**self).heap_size_of_children()
+      0
+      //  (**self).heap_size_of_children()
     }
 }
 
